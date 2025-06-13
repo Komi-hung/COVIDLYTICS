@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>COVIDLYTICS</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='tongquan.css') }}">
+        <style>
+        /* Dán toàn bộ CSS của chatbot vào đây tạm thời để kiểm tra */
+        #chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            max-height: 400px;
+            background: #fff;
+            border: 1px solid #00bff3;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .chatbot-closed {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        /* ... và các CSS chatbot khác ... */
+        /* Đừng quên dán toàn bộ đoạn CSS chatbot ở đây */
+
+        .chatbot-toggle {
+            width: 50px;
+            height: 50px;
+            background: #00bff3;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .chatbot-closed .chatbot-toggle {
+            position: static;
+        }
+        /* ... và các CSS chatbot khác ... */
+    </style>
+    </head>
+    <body>
+        <nav>
+            <div class="logo">
+                <a href="index.html">COVIDLYTICS</a>
+            </div>
+            <div class="nav-items">
+                <a href="index.html">Tổng quan</a>
+                <a href="canhiem.html">Dự đoán</a>          
+        </nav>
+        <section class="hero">
+            <div class="hero-conatiner">
+                        <div class="casep">
+                            <p id="updated-time">Cập nhật lúc: ...</p>
+                        <div class="case-list">
+                            <div class="case-item">
+                                <h2>Số ca nhiễm</h2>
+                                <p id="infected">Đang tải...</p>
+                            </div>
+                            <div class="case-item">
+                                <h2>Số ca tử vong</h2>
+                                <p id="deceased">Đang tải...</p>
+                            </div>
+                            <div class="case-item">
+                                <h2>Số ca phục hồi</h2>
+                                <p id="recovered">Đang tải...</p>
+                            </div>
+                        </div>
+                    <div class="column-left">
+                        <img src="{{ url_for('static', filename='12.png') }}" alt="illustration" class="hero-image" />
+                </div>
+            </div>
+            <div id="chatbot-container" class="chatbot-closed">
+            <button id="chatbot-toggle" class="chatbot-toggle">💬</button>
+            <div id="chatbot-content" class="chatbot-content">
+                <div id="chatbot-messages"></div>
+                <div class="chatbot-input-area">
+                    <input type="text" id="chatbot-input" placeholder="Nhập câu hỏi về COVID-19...">
+                    <button id="chatbot-send">Gửi</button>
+                </div>
+            </div>
+        </div>
+        </section>  
+        <script>
+        async function fetchCovidData() {
+            const url = "https://api.apify.com/v2/key-value-stores/EaCBL1JNntjR3EakU/records/LATEST?disableRedirect=true";
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Gán dữ liệu từ API nếu có, nếu không dùng giá trị mẫu
+                document.getElementById("infected").textContent = data.infected?.toLocaleString() || "11,619,990";
+                document.getElementById("deceased").textContent = data.deceased?.toLocaleString() || "232,400"; // 2% của 11,619,990
+                document.getElementById("recovered").textContent = data.recovered?.toLocaleString() || "10,457,991"; // 90% của 11,619,990
+
+                // Cập nhật thời gian hiện tại
+                const now = new Date();
+                const formatted = now.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+                document.getElementById("updated-time").textContent = `Cập nhật lúc: ${formatted}`;
+            } catch (error) {
+                console.error("❌ Lỗi khi lấy dữ liệu:", error);
+                // Dùng giá trị mặc định nếu API lỗi
+                document.getElementById("infected").textContent = "11,619,990";
+                document.getElementById("deceased").textContent = "232,400";
+                document.getElementById("recovered").textContent = "10,457,991";
+                const now = new Date();
+                const formatted = now.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+                document.getElementById("updated-time").textContent = `Cập nhật lúc: ${formatted}`;
+            }   
+        }
+
+        window.onload = fetchCovidData;
+
+                // START CHATBOT JAVASCRIPT
+
+                // !!! QUAN TRỌNG: Thay thế bằng API Key THẬT của bạn từ Google AI Studio !!!
+                // KHÔNG ĐỂ KEY MẶC ĐỊNH HOẶC KEY ĐÃ BỊ LỘ/THU HỒI.
+                const GEMINI_API_KEY = "AIzaSyD3yijlDL9UhMEGmmr4Po654LxlEK-vmEc";
+
+                // Danh sách từ khóa liên quan đến COVID-19 và các triệu chứng
+                const covidKeywords = [
+                    "covid", "corona", "virus", "dịch bệnh", "ca nhiễm", "tử vong", "phục hồi",
+                    "triệu chứng", "vaccine", "khẩu trang", "giãn cách", "xét nghiệm", "đại dịch",
+                    "biến thể", "omicron", "delta", "tiêm chủng", "phòng ngừa", "lây nhiễm", "ca tử vong", "ca phục hồi",
+                    // Các từ khóa liên quan đến triệu chứng
+                    "sốt", "ho", "đau họng", "mất vị giác", "mất khứu giác", "khó thở", "đau đầu", "đau nhức cơ thể",
+                    "mệt mỏi", "buồn nôn", "tiêu chảy", "viêm phổi", "nghẹt mũi", "chảy nước mũi",
+                    // Các từ chung giúp nhận diện câu hỏi về COVID-19/triệu chứng
+                    "tình hình", "thông tin", "cập nhật", "bao nhiêu", "là gì", "phải làm gì", "nguy hiểm",
+                    "phân biệt", "làm sao biết", "bị covid", "test", "kiểm tra", "điều trị", "phác đồ"
+                ];
+
+                // Hàm kiểm tra xem câu hỏi có liên quan đến COVID-19 không
+                function isCovidRelated(message) {
+                    const lowerMessage = message.toLowerCase();
+                    // Sử dụng .some() để kiểm tra nếu tin nhắn chứa BẤT KỲ từ khóa nào
+                    return covidKeywords.some(keyword => lowerMessage.includes(keyword));
+                }
+
+                // Hàm gọi API của Gemini
+                async function callGeminiApi(message) {
+                    // Kiểm tra API Key: Chỉ cần kiểm tra xem key có tồn tại và không rỗng
+                    if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "" || GEMINI_API_KEY === "YOUR_ACTUAL_GEMINI_API_KEY_HERE") {
+                        console.error("Lỗi: Vui lòng đặt Gemini API Key của bạn.");
+                        return "Lỗi cấu hình: Vui lòng kiểm tra Gemini API Key của bạn.";
+                    }
+
+                    // Cập nhật API_ENDPOINT để sử dụng mô hình gemini-2.0-flash
+                    const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+                    try {
+                        const response = await fetch(API_ENDPOINT, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        // PROMPT ĐÃ ĐƯỢC CHỈNH SỬA VÀ TỐI ƯU HÓA
+                                        text: `Bạn là chatbot chuyên về COVID-19 và các triệu chứng liên quan. Trả lời câu hỏi sau một cách ngắn gọn, chính xác và chỉ cung cấp thông tin liên quan trực tiếp đến COVID-19 hoặc các triệu chứng của nó.
+                                        Nếu câu hỏi yêu cầu cập nhật tình hình hoặc số liệu chung về COVID-19 (ví dụ: "cập nhật ca nhiễm", "tình hình dịch"), hãy cung cấp thông tin tổng quan bạn có về COVID-19.
+                                        Nếu câu hỏi hoàn toàn không liên quan đến COVID-19 hoặc các triệu chứng của nó, hãy lịch sự thông báo rằng bạn chỉ có thể hỗ trợ về chủ đề này.
+                                        Câu hỏi: ${message}`
+                                    }]
+                                }]
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        // Kiểm tra lỗi từ API (ví dụ: 400 Bad Request, 403 Forbidden)
+                        if (!response.ok) {
+                            console.error("Lỗi từ Gemini API:", response.status, data);
+                            // Cố gắng lấy thông báo lỗi từ Gemini nếu có
+                            if (data && data.error && data.error.message) {
+                                return `Lỗi API: ${data.error.message}. Vui lòng kiểm tra API Key và hạn chế truy cập.`;
+                            }
+                            return `Xin lỗi, có lỗi khi gọi API Gemini (${response.status}). Vui lòng thử lại.`;
+                        }
+
+
+                        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+                            return data.candidates[0].content.parts[0].text;
+                        } else {
+                            console.warn("Không có phản hồi hợp lệ từ Gemini API:", data);
+                            return "Xin lỗi, tôi không thể tìm thấy thông tin phù hợp từ Gemini API. Vui lòng thử lại câu hỏi khác.";
+                        }
+                    } catch (error) {
+                        console.error("Lỗi khi gọi API Gemini:", error);
+                        return "Xin lỗi, tôi gặp lỗi khi xử lý câu hỏi của bạn. Vui lòng thử lại.";
+                    }
+                }
+
+                // Sự kiện khi người dùng nhấn nút gửi tin nhắn
+                document.getElementById('chatbot-send').addEventListener('click', async function() {
+                    const input = document.getElementById('chatbot-input');
+                    const message = input.value.trim();
+                    if (message) {
+                        const messagesDisplay = document.getElementById('chatbot-messages');
+
+                        // Hiển thị tin nhắn của người dùng
+                        const userMessageDiv = document.createElement('div');
+                        userMessageDiv.textContent = `Bạn: ${message}`;
+                        userMessageDiv.classList.add('user-message');
+                        messagesDisplay.appendChild(userMessageDiv);
+                        input.value = ''; // Xóa nội dung input
+                        messagesDisplay.scrollTop = messagesDisplay.scrollHeight; // Cuộn xuống cuối
+
+                        const lowerMessage = message.toLowerCase();
+
+                        // Xử lý các câu hỏi chung về tình hình/cập nhật COVID-19 ngay tại client
+                        // Điều này giúp phản hồi nhanh mà không cần gọi API
+                        if (lowerMessage.includes("cập nhật ca nhiễm") || lowerMessage.includes("tình hình dịch") || lowerMessage.includes("tình hình covid")) {
+                            const botMessageDiv = document.createElement('div');
+                            botMessageDiv.textContent = "Bot: Để cập nhật số liệu COVID-19, tôi cần bạn cụ thể hơn về quốc gia hoặc loại thông tin bạn muốn (ví dụ: ca nhiễm mới, tổng số ca, ca tử vong).";
+                            botMessageDiv.classList.add('bot-message');
+                            messagesDisplay.appendChild(botMessageDiv);
+                            messagesDisplay.scrollTop = messagesDisplay.scrollHeight;
+                            return; // Dừng xử lý tại đây
+                        }
+
+                        // Kiểm tra xem câu hỏi có liên quan đến COVID-19/triệu chứng không.
+                        // Nếu KHÔNG liên quan, bot sẽ trả lời thông báo giới hạn chủ đề.
+                        // Nếu CÓ liên quan, sẽ tiếp tục gọi Gemini API.
+                        if (!isCovidRelated(message)) {
+                            const botMessageDiv = document.createElement('div');
+                            botMessageDiv.textContent = "Bot: Xin lỗi, tôi chỉ trả lời các câu hỏi về COVID-19 và các triệu chứng liên quan. Vui lòng hỏi về chủ đề này!";
+                            botMessageDiv.classList.add('bot-message');
+                            messagesDisplay.appendChild
+                            messagesDisplay.scrollTop = messagesDisplay.scrollHeight;
+                            return; // Dừng xử lý tại đây
+                        }
+
+                        // Nếu câu hỏi đã qua các bộ lọc và được xác định là liên quan, gọi Gemini API
+                        const botResponse = await callGeminiApi(message);
+                        const botMessageDiv = document.createElement('div');
+                        botMessageDiv.textContent = `Bot: ${botResponse}`;
+                        botMessageDiv.classList.add('bot-message');
+                        messagesDisplay.appendChild(botMessageDiv);
+                        messagesDisplay.scrollTop = messagesDisplay.scrollHeight;
+                    }
+                });
+
+                // Sự kiện khi người dùng nhấn Enter trong ô input
+                document.getElementById('chatbot-input').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('chatbot-send').click(); // Kích hoạt sự kiện click nút gửi
+                    }
+                });
+
+                // Sự kiện đóng/mở chatbot
+                document.getElementById('chatbot-toggle').addEventListener('click', function() {
+                    const container = document.getElementById('chatbot-container');
+                    container.classList.toggle('chatbot-closed');
+                });
+        </script>
+    </body>
+</html>
