@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: covidlytics
+    env: python
+    buildCommand: |
+      pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+    startCommand: python app.py
+    plan: free

@@ -1,0 +1,327 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #e0f7fa;
+}
+
+nav {
+    background: url('logo.jpg') center/cover no-repeat;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    color: white;
+}
+
+.banner {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    position: relative;
+}
+
+.banner a {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 3rem;        /* Chỉnh size chữ to nhỏ tùy ý */
+    color: white;
+    font-family: 'Arial', sans-serif;  /* Đổi font chữ */
+    font-weight: bold;   
+    text-decoration: none   
+}
+
+.nav-items a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 1.3rem;
+    transition: color 0.3s ease;
+}
+
+.nav-items a:hover {
+    color: #f0f0f0;
+}
+
+.hero {
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #e0f7fa;
+}
+
+.hero-conatiner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.casep {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+#updated-time {
+    font-weight: bold;
+    color: #555;
+}
+
+.case-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.case-item {
+    background-color: #ffffff;
+    border: 1px solid #b2ebf2;
+    border-radius: 10px;
+    padding: 20px 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+    max-width: 300px;
+}
+
+.container {
+    display: flex;
+    align-items: flex-start; /* Cho ảnh và box ngang hàng theo top */
+    justify-content: center; /* Căn giữa cả 2 phần */
+    gap: 30px; /* Khoảng cách giữa box và ảnh */
+    padding: 30px;
+}
+
+.column-right img {
+    max-width: 350px;
+    height: auto;
+    display: block;
+}
+
+
+
+/* Thêm style cho form Dự đoán */
+
+.prediction {
+    flex: 1;
+    max-width: 700px; /* Tăng chiều dài box */
+    background-color: #ffffff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.prediction h2 {
+    margin-bottom: 15px;
+    font-size: 2.5rem;
+    color: #000;
+}
+
+/* Bố trí các checkbox theo hàng ngang */
+.prediction form label {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    margin-bottom: 10px;
+}
+
+/* Nhóm các checkbox thành hàng */
+
+.symptom_columns,
+.underlying_disease_columns,
+.exposure_columns,
+.prevention_columns{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    margin-bottom: 15px;
+}
+
+/* Nút bấm */
+.prediction form label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+/* Thu nhỏ checkbox nếu cần */
+.prediction form input[type="checkbox"],
+.prediction form input[type="radio"] {
+    width: 18px;
+    height: 18px;
+}
+
+@media (min-width: 768px) {
+    .hero-conatiner {
+        flex-direction: row; /* Layout horizontally on larger screens */
+        justify-content: space-around;
+    }
+
+    .case-list {
+        flex-wrap: nowrap; /* Prevent wrapping on larger screens */
+    }
+
+    .case-item {
+        max-width: 280px; /* Slightly smaller for 3 in a row */
+    }
+}
+
+@media (max-width: 767px) {
+    .case-item {
+        min-width: 100%; /* Full width on very small screens */
+    }
+}
+
+#chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    max-height: 400px;
+    background: #fff;
+    border: 1px solid #00bff3;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease-in-out; /* Smooth transition for opening/closing */
+}
+
+/* Đây là class điều khiển khi chatbot đóng */
+.chatbot-closed {
+    width: 50px; /* Kích thước khi đóng */
+    height: 50px; /* Kích thước khi đóng */
+    border-radius: 50%; /* Làm cho nó tròn */
+    overflow: hidden; /* Ẩn nội dung bên trong */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* Có thể thêm display: flex và căn giữa nếu bạn muốn nút toggle luôn nằm chính giữa khung tròn khi đóng */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nội dung của chatbot khi đóng thì ẩn đi */
+.chatbot-closed #chatbot-content {
+    display: none;
+}
+
+.chatbot-toggle {
+    width: 50px;
+    height: 50px;
+    background-color: #00bff3; /* Màu nền của nút chatbot, sẽ hiển thị nếu ảnh trong suốt */
+    color: #fff; /* Giữ lại nếu bạn muốn dùng màu chữ cho fallback hoặc mục đích khác, nhưng sẽ bị ẩn bởi ảnh */
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    /* CÁC THAY ĐỔI ĐỂ HIỂN THỊ HÌNH ẢNH */
+    background-image: url('to.png'); /* <--- THAY THẾ CHỖ NÀY BẰNG ĐƯỜNG DẪN THỰC TẾ CỦA HÌNH ẢNH CỦA BẠN */
+    background-size: 100%; /* Tùy chỉnh kích thước hình ảnh bên trong nút (ví dụ 60% của nút) */
+    background-repeat: no-repeat; /* Đảm bảo hình ảnh không lặp lại */
+    background-position: center; /* Căn giữa hình ảnh trong nút */
+
+    font-size: 0; /* Ẩn emoji 💬 hoặc bất kỳ text nào khác trong nút */
+    /* Hoặc bạn có thể dùng: text-indent: -9999px; overflow: hidden; */
+}
+
+.chatbot-closed .chatbot-toggle {
+    position: static; /* Khi đóng, nó ngồi tự nhiên trong container 50x50px */
+    /* Không cần margin: auto; ở đây nếu container đã là flexbox và item duy nhất */
+}
+
+
+.chatbot-content {
+    padding: 10px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#chatbot-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#chatbot-messages div {
+    padding: 8px 12px;
+    border-radius: 15px; /* Bo tròn tin nhắn */
+    max-width: 80%;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+}
+
+#chatbot-messages .user-message {
+    background-color: #bbdefb; /* Light blue for user */
+    align-self: flex-end;
+    color: #333;
+    border-bottom-right-radius: 2px; /* Slight design touch */
+}
+
+#chatbot-messages .bot-message {
+    background-color: #e0f2f7; /* Lighter blue for bot */
+    align-self: flex-start;
+    color: #18392B;
+    border-bottom-left-radius: 2px; /* Slight design touch */
+}
+
+
+.chatbot-input-area {
+    display: flex;
+    gap: 5px;
+}
+
+#chatbot-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #b2ebf2; /* Màu viền input */
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+#chatbot-send {
+    padding: 8px 15px;
+    background: #00bff3;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+#chatbot-send:hover {
+    background: #0099cc;
+}
